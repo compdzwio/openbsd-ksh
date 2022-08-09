@@ -147,7 +147,7 @@ main(int argc, char *argv[])
 
 	kshname = argv[0];
 
-	setlocale(LC_ALL, "");
+	setlocale(LC_CTYPE, "");
 
 	if (issetugid()) { /* could later drop privileges */
 		if (pledge("stdio rpath wpath cpath fattr flock getpw proc "

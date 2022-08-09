@@ -1522,7 +1522,9 @@ x_vi_getu8(char firstch, char *buf, int off)
 	i = 0;
 	u8c[i++] = c;
 
-	if ((c & 0xf8) == 0xf0 && c < 0xf5)
+	if (Flag(FVISHOW8))
+		len = 1;
+	else if ((c & 0xf8) == 0xf0 && c < 0xf5)
 		len = 4;
 	else if ((c & 0xf0) == 0xe0)
 		len = 3;
@@ -2386,8 +2388,8 @@ u8code(const char *str)
 		wc = c & 0x1f;
 		len = 2;
 	} else {
-		len = 1;
 		wc = c & 0xff;
+		len = 1;
 	}
 
 	for (i = 1; i < len; i++) {
