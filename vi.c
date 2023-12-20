@@ -75,13 +75,13 @@ static void	vi_pprompt(int);
 static void	vi_error(void);
 static void	vi_macro_reset(void);
 static void	x_vi_ungetc(int);
-static int      x_vi_getc(void);
-static int      x_vi_getu8(char, char *, int);
+static int	x_vi_getc(void);
+static int	x_vi_getu8(char, char *, int);
 static int	x_vi_putbuf(const char *, size_t);
 static int	isu8cont(unsigned char);
-static int      u8code(const char *);
-static int      u8mblen(unsigned char);
-static int      u8width(int);
+static int	u8code(const char *);
+static int	u8mblen(unsigned char);
+static int	u8width(int);
 
 #define C_	0x1		/* a valid command that isn't a M_, E_, U_ */
 #define M_	0x2		/* movement command (h, l, etc.) */
@@ -450,7 +450,6 @@ vi_hook(int ch)
 					if (srchlen >= SRCHLEN - 1)
 						vi_error();
 				}
-
 				if ((ch & 0x80) && Flag(FVISHOW8)) {
 					if (es->linelen + 2 > es->cbufsize)
 						vi_error();
@@ -577,7 +576,6 @@ vi_insert(int ch)
 	int	tcursor;
 	int	i, len;
 	char	u8c[4];
-
 
 	if (ch == edchars.erase || ch == CTRL('h')) {
 		if (insert == REPLACE) {
@@ -798,7 +796,7 @@ vi_cmd(int argcnt, const char *cmd)
 		case 'a':
 			modified = 1; hnum = hlast;
 			if (es->linelen != 0)
-				while (isu8cont(es->cbuf[++es->cursor]) && es->cursor < es->linelen) /* fix cursor great linelen */
+				while (isu8cont(es->cbuf[++es->cursor]) && es->cursor < es->linelen) /* fix cursor great than linelen */
 					continue;
 			insert = INSERT;
 			break;
@@ -1474,8 +1472,8 @@ edit_reset(char *buf, size_t len)
 		pwidth -= prompt_trunc;
 	} else
 		prompt_trunc = 0;
-	if (!wbuf_len || wbuf_len != (x_cols - 3) * 4) { /* The utf-8 has a maximum of 4 bytes per character. */
-		wbuf_len = (x_cols - 3) * 4;
+ 	if (!wbuf_len || wbuf_len != (x_cols - 3) * 4) { /* The utf-8 has a maximum of 4 bytes per character. */
+ 		wbuf_len = (x_cols - 3) * 4;
 		wbuf[0] = aresize(wbuf[0], wbuf_len, APERM);
 		wbuf[1] = aresize(wbuf[1], wbuf_len, APERM);
 	}
@@ -1489,7 +1487,7 @@ edit_reset(char *buf, size_t len)
 
 static int unget_char = -1;
 
-static void 
+static void
 x_vi_ungetc(int c)
 {
 	unget_char = c;
@@ -1522,9 +1520,7 @@ x_vi_getu8(char firstch, char *buf, int off)
 	i = 0;
 	u8c[i++] = c;
 
-	if (Flag(FVISHOW8))
-		len = 1;
-	else if ((c & 0xf8) == 0xf0 && c < 0xf5)
+	if ((c & 0xf8) == 0xf0 && c < 0xf5)
 		len = 4;
 	else if ((c & 0xf0) == 0xe0)
 		len = 3;
@@ -1922,6 +1918,8 @@ rewindow(void)
 static int
 newcol(int ch, int col)
 {
+	if (ch == '\t')
+		return (col | 7) + 1;
 	return col + u8width(ch);
 }
 
@@ -1938,9 +1936,8 @@ display(char *wb1, char *wb2, int leftside)
 	int	 moreright;
 	char	 mc;	/* new "more character" at the right of window */
 	unsigned char ch;
-	int      wc1, wc2, w1col, w2col;
-	int      i, len, wc, u8w;
-
+	int	 wc1, wc2, w1col, w2col;
+	int	 i, len, wc, u8w;
 
 	/*
 	 * Fill the current display buffer with data from cbuf.
@@ -2388,8 +2385,8 @@ u8code(const char *str)
 		wc = c & 0x1f;
 		len = 2;
 	} else {
-		wc = c & 0xff;
 		len = 1;
+		wc = c & 0xff;
 	}
 
 	for (i = 1; i < len; i++) {

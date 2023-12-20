@@ -1,4 +1,4 @@
-/*	$OpenBSD: emacs.c,v 1.88 2021/06/27 15:53:33 schwarze Exp $	*/
+/*	$OpenBSD: emacs.c,v 1.90 2023/06/21 22:22:08 millert Exp $	*/
 
 /*
  *  Emacs-like command line editing and history
@@ -32,10 +32,6 @@
 
 static	Area	aedit;
 #define	AEDIT	&aedit		/* area for kill ring and macro defns */
-
-#undef CTRL
-#define	CTRL(x)		((x) == '?' ? 0x7F : (x) & 0x1F)	/* ASCII */
-#define	UNCTRL(x)	((x) == 0x7F ? '?' : (x) | 0x40)	/* ASCII */
 
 /* values returned by keyboard functions */
 #define	KSTD	0
@@ -135,7 +131,7 @@ static int	x_size_str(char *);
 static int	x_size(int);
 static void	x_zots(char *);
 static void	x_zotc(int);
-static void     x_zotu8c(const char *, int);
+static void	x_zotu8c(const char *, int);
 static void	x_load_hist(char **);
 static int	x_search(char *, int, int);
 static int	x_match(char *, char *);
@@ -146,7 +142,7 @@ static void	x_e_ungetc(int);
 static int	x_e_getc(void);
 static int	x_e_getu8(char *, int);
 static void	x_e_putc(int);
-static void     x_e_putu8c(const char *, int);
+static void	x_e_putu8c(const char *, int);
 static void	x_e_puts(const char *);
 static int	x_comment(int);
 static int	x_fold_case(int);
@@ -1011,7 +1007,7 @@ x_search_hist(int c)
 		if ((c = x_e_getc()) < 0)
 			return KSTD;
 		f = kb_find_hist_func(c);
-		if (c == CTRL('[')) {
+		if (c == CTRL('[') || c == CTRL('@')) {
 			x_e_ungetc(c);
 			break;
 		} else if (f == x_search_hist)

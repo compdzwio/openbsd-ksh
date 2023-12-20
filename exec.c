@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.74 2019/06/28 13:34:59 deraadt Exp $	*/
+/*	$OpenBSD: exec.c,v 1.77 2023/06/21 22:22:08 millert Exp $	*/
 
 /*
  * execute command tree
@@ -114,10 +114,12 @@ execute(struct op *volatile t,
 		for (iowp = t->ioact; *iowp != NULL; iowp++) {
 			if (iosetup(*iowp, tp) < 0) {
 				exstat = rv = 1;
-				/* Redirection failures for special commands
+				/* Except in the permanent case (exec 2>afile),
+				 * redirection failures for special commands
 				 * cause (non-interactive) shell to exit.
 				 */
-				if (tp && tp->type == CSHELL &&
+				if (tp && tp->val.f != c_exec &&
+				    tp->type == CSHELL &&
 				    (tp->flag & SPEC_BI))
 					errorf(NULL);
 				/* Deal with FERREXIT, quitenv(), etc. */
@@ -1197,7 +1199,7 @@ herein(const char *content, int sub)
 	 * doesn't get removed too soon).
 	 */
 	h = maketemp(ATEMP, TT_HEREDOC_EXP, &genv->temps);
-	if (!(shf = h->shf) || (fd = open(h->name, O_RDONLY, 0)) == -1) {
+	if (!(shf = h->shf) || (fd = open(h->name, O_RDONLY)) == -1) {
 		warningf(true, "can't %s temporary file %s: %s",
 		    !shf ? "create" : "open",
 		    h->name, strerror(errno));
@@ -1334,33 +1336,6 @@ pr_menu(char *const *ap)
 	smi.num_width = dwidth;
 	print_columns(shl_out, n, select_fmt_entry, (void *) &smi,
 	    dwidth + nwidth + 2, 1);
-
-	return n;
-}
-
-/* XXX: horrible kludge to fit within the framework */
-
-static char *plain_fmt_entry(void *arg, int i, char *buf, int buflen);
-
-static char *
-plain_fmt_entry(void *arg, int i, char *buf, int buflen)
-{
-	shf_snprintf(buf, buflen, "%s", ((char *const *)arg)[i]);
-	return buf;
-}
-
-int
-pr_list(char *const *ap)
-{
-	char *const *pp;
-	int nwidth;
-	int i, n;
-
-	for (n = 0, nwidth = 0, pp = ap; *pp; n++, pp++) {
-		i = strlen(*pp);
-		nwidth = (i > nwidth) ? i : nwidth;
-	}
-	print_columns(shl_out, n, plain_fmt_entry, (void *) ap, nwidth + 1, 0);
 
 	return n;
 }
